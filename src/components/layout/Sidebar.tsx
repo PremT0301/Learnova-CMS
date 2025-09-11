@@ -12,8 +12,11 @@ import {
   GraduationCap,
   Bell,
   MessageSquare,
-  LogOut
+  LogOut,
+  Mail,
+  Activity
 } from 'lucide-react';
+import LearnovaLogo from '@/components/images/LEARNOVA-T.png';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -34,11 +37,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     switch (user?.role) {
       case 'admin':
+        // Admin isolation: show only admin section links
         return [
-          ...commonItems,
-          { to: '/users', icon: Users, label: 'User Management' },
-          { to: '/analytics', icon: BarChart3, label: 'Analytics' },
-          { to: '/settings', icon: Settings, label: 'System Settings' },
+          { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Admin Dashboard' },
+          { to: '/admin/users', icon: Users, label: 'Users' },
+          { to: '/admin/departments', icon: Users, label: 'Departments' },
+          { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+          { to: '/admin/reports', icon: BarChart3, label: 'Reports' },
+          { to: '/admin/announcements', icon: MessageSquare, label: 'Announcements' },
+          { to: '/admin/logs', icon: FileText, label: 'Audit Logs' },
+          { to: '/admin/backups', icon: Settings, label: 'Backups' },
+          { to: '/admin/impersonation', icon: UserCheck, label: 'Impersonation' },
+          { to: '/admin/permissions', icon: UserCheck, label: 'Permissions' },
+          { to: '/admin/invites', icon: Mail, label: 'Invites' },
+          { to: '/admin/health', icon: Activity, label: 'Health' },
+          { to: '/admin/support', icon: MessageSquare, label: 'Support' },
+          { to: '/admin/settings', icon: Settings, label: 'System Settings' },
         ];
       case 'faculty':
         return [
@@ -79,7 +93,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-nav-foreground/10">
-            <h1 className="text-2xl font-bold text-nav-foreground">EduManage</h1>
+            <div className="flex items-center gap-3">
+              <img src={LearnovaLogo} alt="Learnova logo" className="h-9 w-auto object-contain" />
+              <h1 className="text-2xl font-bold text-nav-foreground">Learnova</h1>
+            </div>
             <p className="text-nav-foreground/70 text-sm mt-1">Learning Management</p>
           </div>
 

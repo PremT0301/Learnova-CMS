@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NavLink, useLocation } from 'react-router-dom';
+import LearnovaLogo from '@/components/images/LEARNOVA-T.png';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -14,12 +15,19 @@ export function Header() {
     <header className="bg-card border-b border-border px-4 py-3 lg:px-6">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-6 min-w-0">
-          <div className="text-lg font-semibold whitespace-nowrap">EduManage</div>
+          <NavLink to={isAdminSection ? '/admin/dashboard' : '/dashboard'} className="flex items-center gap-2 shrink-0">
+            <img
+              src={LearnovaLogo}
+              alt="Learnova logo"
+              className="h-8 w-auto object-contain sm:h-9"
+            />
+            <div className="text-lg font-semibold whitespace-nowrap">Learnova</div>
+          </NavLink>
           <nav className="hidden md:flex items-center gap-2">
             {isAdminSection ? (
               <>
                 <NavLink
-                  to="/admin"
+                  to="/admin/dashboard"
                   className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
                 >
                   Dashboard

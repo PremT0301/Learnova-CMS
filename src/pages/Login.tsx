@@ -18,7 +18,9 @@ export default function Login() {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    if (user.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user.role === 'faculty') return <Navigate to="/faculty-dashboard" replace />;
+    return <Navigate to="/student-dashboard" replace />;
   }
 
   return <LoginForm />;
