@@ -14,6 +14,7 @@ interface StudentSidebarProps {
   isDesktop?: boolean;
 }
 
+// Sidebar modules - only essential items remain
 const studentModules = [
   {
     icon: BookOpen,
@@ -46,46 +47,10 @@ const studentModules = [
     description: 'View course and system announcements'
   },
   {
-    icon: Calendar,
-    label: 'Schedule',
-    path: '/student/schedule',
-    description: 'View class schedule and events'
-  },
-  {
-    icon: MessageSquare,
-    label: 'Messages',
-    path: '/student/messages',
-    description: 'Communicate with faculty and peers'
-  },
-  {
-    icon: FileText,
-    label: 'Course Materials',
-    path: '/student/materials',
-    description: 'Access course resources and documents'
-  },
-  {
-    icon: TrendingUp,
-    label: 'Progress',
-    path: '/student/progress',
-    description: 'Track learning progress and analytics'
-  },
-  {
     icon: User,
     label: 'Profile & Settings',
     path: '/student/settings',
     description: 'Manage personal information and preferences'
-  },
-  {
-    icon: Megaphone,
-    label: 'Notifications',
-    path: '/student/notifications',
-    description: 'Manage notification preferences'
-  },
-  {
-    icon: BarChart3,
-    label: 'Analytics',
-    path: '/student/analytics',
-    description: 'View detailed academic analytics'
   }
 ];
 
@@ -98,25 +63,6 @@ export function StudentSidebar({ isOpen, onClose, isDesktop = false }: StudentSi
           <div className="mb-6">
             <h2 className="text-lg font-semibold">Student Modules</h2>
             <p className="text-sm text-muted-foreground mt-1">Access your academic tools</p>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/10">
-            <h3 className="text-sm font-medium mb-3 text-primary">Quick Actions</h3>
-            <div className="space-y-2">
-              <Button size="sm" variant="outline" className="w-full justify-start" asChild>
-                <NavLink to="/student/assignments">
-                  <Plus size={14} className="mr-2" />
-                  New Assignment
-                </NavLink>
-              </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start" asChild>
-                <NavLink to="/student/messages">
-                  <MessageSquare size={14} className="mr-2" />
-                  Send Message
-                </NavLink>
-              </Button>
-            </div>
           </div>
 
           {/* Modules Grid */}
@@ -200,25 +146,6 @@ export function StudentSidebar({ isOpen, onClose, isDesktop = false }: StudentSi
                 <Button variant="ghost" size="sm" onClick={onClose}>
                   <X size={20} />
                 </Button>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/10">
-                <h3 className="text-sm font-medium mb-3 text-primary">Quick Actions</h3>
-                <div className="space-y-2">
-                  <Button size="sm" variant="outline" className="w-full justify-start" asChild>
-                    <NavLink to="/student/assignments" onClick={onClose}>
-                      <Plus size={14} className="mr-2" />
-                      New Assignment
-                    </NavLink>
-                  </Button>
-                  <Button size="sm" variant="outline" className="w-full justify-start" asChild>
-                    <NavLink to="/student/messages" onClick={onClose}>
-                      <MessageSquare size={14} className="mr-2" />
-                      Send Message
-                    </NavLink>
-                  </Button>
-                </div>
               </div>
 
               {/* Modules Grid */}

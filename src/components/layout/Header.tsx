@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
-import { Bell, Search, LogOut, Menu } from 'lucide-react';
+import { Bell, Search, LogOut, Menu, User, Settings, UserCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import LearnovaLogo from '@/components/images/LEARNOVA-T.png';
 import { Sidebar } from './Sidebar';
 import { FacultySidebar } from './FacultySidebar';
-import { StudentSidebar } from './StudentSidebar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 
 export function Header() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const isAdminSection = location.pathname.startsWith('/admin');
-  const isFacultySection = location.pathname.startsWith('/faculty') || 
+  const isFacultySection = location.pathname.startsWith('/faculty') ||
                           location.pathname === '/faculty-dashboard' ||
                           location.pathname === '/students' ||
                           location.pathname === '/gradebook' ||
@@ -33,14 +41,60 @@ export function Header() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-6 min-w-0">
           {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+          {!isStudentSection ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          ) : (
+            <DropdownMenu open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="md:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem asChild>
+                  <NavLink to="/student-dashboard" className="w-full cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+                    Dashboard
+                  </NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/courses" className="w-full cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+                    Courses
+                  </NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/grades" className="w-full cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+                    Grades
+                  </NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/student/assignments" className="w-full cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+                    Assignments
+                  </NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/student/submissions" className="w-full cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+                    Submissions
+                  </NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/student/announcements" className="w-full cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+                    Announcements
+                  </NavLink>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           
           <NavLink to={
             isAdminSection ? '/admin/dashboard' : 
@@ -112,29 +166,42 @@ export function Header() {
               </>
             ) : isStudentSection ? (
               <>
+                {/* Student Navigation - 6 Essential Items */}
                 <NavLink
                   to="/student-dashboard"
-                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                  className={({ isActive }) => `px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive ? 'bg-[#37729C] text-white shadow-sm' : 'text-[#091F46] hover:text-white hover:bg-[#37729C]/90'}`}
                 >
                   Dashboard
                 </NavLink>
                 <NavLink
                   to="/courses"
-                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                  className={({ isActive }) => `px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive ? 'bg-[#37729C] text-white shadow-sm' : 'text-[#091F46] hover:text-white hover:bg-[#37729C]/90'}`}
                 >
-                  My Courses
+                  Courses
+                </NavLink>
+                <NavLink
+                  to="/grades"
+                  className={({ isActive }) => `px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive ? 'bg-[#37729C] text-white shadow-sm' : 'text-[#091F46] hover:text-white hover:bg-[#37729C]/90'}`}
+                >
+                  Grades
                 </NavLink>
                 <NavLink
                   to="/student/assignments"
-                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                  className={({ isActive }) => `px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive ? 'bg-[#37729C] text-white shadow-sm' : 'text-[#091F46] hover:text-white hover:bg-[#37729C]/90'}`}
                 >
                   Assignments
                 </NavLink>
                 <NavLink
-                  to="/grades"
-                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                  to="/student/submissions"
+                  className={({ isActive }) => `px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive ? 'bg-[#37729C] text-white shadow-sm' : 'text-[#091F46] hover:text-white hover:bg-[#37729C]/90'}`}
                 >
-                  My Grades
+                  Submissions
+                </NavLink>
+                <NavLink
+                  to="/student/announcements"
+                  className={({ isActive }) => `px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${isActive ? 'bg-[#37729C] text-white shadow-sm' : 'text-[#091F46] hover:text-white hover:bg-[#37729C]/90'}`}
+                >
+                  Announcements
                 </NavLink>
               </>
             ) : (
@@ -197,6 +264,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
+          {/* Notifications */}
           <Button variant="ghost" size="sm" className="relative">
             <Bell size={20} />
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full text-xs flex items-center justify-center text-white">
@@ -204,53 +272,87 @@ export function Header() {
             </span>
           </Button>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-foreground">{user?.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              {user?.avatar ? (
-                <img 
-                  src={user.avatar} 
-                  alt={user.name}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-              ) : (
-                <span className="text-primary font-semibold text-sm">
-                  {user?.name.charAt(0)}
-                </span>
-              )}
-            </div>
-            <Button variant="ghost" size="sm" onClick={logout}>
-              <LogOut size={18} />
-            </Button>
-          </div>
+          {/* Profile Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="flex items-center gap-3 hover:bg-[#E9E4DE] transition-colors"
+              >
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-medium text-[#091F46]">{user?.name}</p>
+                  <p className="text-xs text-[#7699AE] capitalize">{user?.role}</p>
+                </div>
+                <div className="w-9 h-9 rounded-full bg-[#37729C]/10 flex items-center justify-center border-2 border-[#37729C]/20">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-9 h-9 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-[#37729C] font-semibold text-sm">
+                      {user?.name.charAt(0)}
+                    </span>
+                  )}
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="px-2 py-2 border-b border-border">
+                <p className="text-sm font-medium text-[#091F46]">{user?.name}</p>
+                <p className="text-xs text-[#7699AE]">{user?.email}</p>
+              </div>
+              <DropdownMenuItem
+                onClick={() => navigate('/student/profile')}
+                className="cursor-pointer py-2.5"
+              >
+                <UserCircle size={18} className="mr-2 text-[#37729C]" />
+                <span className="text-[#091F46]">View Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate('/student/profile/edit')}
+                className="cursor-pointer py-2.5"
+              >
+                <User size={18} className="mr-2 text-[#37729C]" />
+                <span className="text-[#091F46]">Edit Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate('/student/settings')}
+                className="cursor-pointer py-2.5"
+              >
+                <Settings size={18} className="mr-2 text-[#37729C]" />
+                <span className="text-[#091F46]">Account Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer py-2.5 text-red-600 focus:text-red-600 focus:bg-red-50"
+              >
+                <LogOut size={18} className="mr-2" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
-      {/* Mobile Sidebars */}
+      {/* Mobile Sidebars - Only for Admin and Faculty */}
       {isAdminSection && (
-        <Sidebar 
-          isOpen={isSidebarOpen} 
-          onClose={() => setIsSidebarOpen(false)} 
-          isDesktop={false} 
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          isDesktop={false}
         />
       )}
       {isFacultySection && (
-        <FacultySidebar 
-          isOpen={isSidebarOpen} 
-          onClose={() => setIsSidebarOpen(false)} 
-          isDesktop={false} 
+        <FacultySidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          isDesktop={false}
         />
       )}
-      {isStudentSection && (
-        <StudentSidebar 
-          isOpen={isSidebarOpen} 
-          onClose={() => setIsSidebarOpen(false)} 
-          isDesktop={false} 
-        />
-      )}
+      {/* Student section has no sidebar */}
     </header>
   );
 }

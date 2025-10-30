@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { FacultySidebar } from './FacultySidebar';
-import { StudentSidebar } from './StudentSidebar';
 
 export function Layout() {
   const location = useLocation();
@@ -29,8 +28,8 @@ export function Layout() {
       <div className="flex">
         {isAdminSection && <Sidebar isOpen={true} onClose={() => {}} isDesktop={true} />}
         {isFacultySection && <FacultySidebar isOpen={true} onClose={() => {}} isDesktop={true} />}
-        {isStudentSection && <StudentSidebar isOpen={true} onClose={() => {}} isDesktop={true} />}
-        <main className={`flex-1 ${isAdminSection || isFacultySection || isStudentSection ? 'lg:ml-0' : ''}`}>
+        {/* Student section has no sidebar - full width layout */}
+        <main className={`flex-1 ${isAdminSection || isFacultySection ? 'lg:ml-0' : ''}`}>
           <Outlet />
         </main>
       </div>
