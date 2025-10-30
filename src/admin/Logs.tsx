@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { db } from '@/firebase';
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
@@ -16,6 +17,9 @@ export default function Logs() {
   const [qAction, setQAction] = useState('');
   const [qUser, setQUser] = useState('');
   const [qDate, setQDate] = useState('');
+  const [pageSize] = useState(25);
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<LogItem | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -40,6 +44,11 @@ export default function Logs() {
       (qDate ? (i.timestamp ?? '').startsWith(qDate) : true)
     );
   }, [items, qAction, qUser, qDate]);
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
 
   const exportCsv = () => {
     const header = ['timestamp', 'userId', 'action', 'details'];
@@ -76,30 +85,60 @@ export default function Logs() {
         {loading ? (
           <p className="text-muted-foreground">Loading logs...</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-muted-foreground">
-                  <th className="py-2">Timestamp</th>
-                  <th className="py-2">User</th>
-                  <th className="py-2">Action</th>
-                  <th className="py-2">Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((i) => (
-                  <tr key={i.id} className="border-t border-border/60">
-                    <td className="py-3">{i.timestamp}</td>
-                    <td className="py-3">{i.userId ?? '-'}</td>
-                    <td className="py-3">{i.action}</td>
-                    <td className="py-3"><pre className="text-xs whitespace-pre-wrap">{JSON.stringify(i.details ?? {}, null, 2)}</pre></td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-muted-foreground">
+                    <th className="py-2">Timestamp</th>
+                    <th className="py-2">User</th>
+                    <th className="py-2">Action</th>
+                    <th className="py-2">Details</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {paginated.map((i) => (
+                    <tr key={i.id} className="border-t border-border/60">
+                      <td className="py-3">{i.timestamp}</td>
+                      <td className="py-3">{i.userId ?? '-'}</td>
+                      <td className="py-3">{i.action}</td>
+                      <td className="py-3">
+                        <Button size="sm" variant="outline" onClick={() => setSelected(i)}>View</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-xs text-muted-foreground">Page {page} of {Math.max(1, Math.ceil(filtered.length / pageSize))}</p>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Previous</Button>
+                <Button variant="outline" size="sm" disabled={page >= Math.ceil(filtered.length / pageSize)} onClick={() => setPage((p) => p + 1)}>Next</Button>
+              </div>
+            </div>
+          </>
         )}
       </Card>
+
+      <Dialog open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Audit Log Details</DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="space-y-2 text-sm">
+              <div><span className="text-muted-foreground">Timestamp:</span> {selected.timestamp}</div>
+              <div><span className="text-muted-foreground">User:</span> {selected.userId ?? '-'}</div>
+              <div><span className="text-muted-foreground">Action:</span> {selected.action}</div>
+              <div>
+                <span className="text-muted-foreground">Details:</span>
+                <pre className="text-xs whitespace-pre-wrap bg-muted/40 p-3 rounded mt-1">{JSON.stringify(selected.details ?? {}, null, 2)}</pre>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { db } from '@/firebase';
-import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, query, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { logAudit } from '@/lib/audit';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,12 +17,13 @@ export default function Permissions() {
   const [roles, setRoles] = useState<RolePerm[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Record<string, string>>({});
+  const [newRole, setNewRole] = useState('');
 
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
-        const snap = await getDocs(collection(db, 'roles'));
+        const snap = await getDocs(query(collection(db, 'roles')));
         const rows: RolePerm[] = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
         setRoles(rows);
       } catch {
@@ -45,6 +46,33 @@ export default function Permissions() {
     }
   };
 
+  const addRole = async () => {
+    const id = newRole.trim().toLowerCase();
+    if (!id) return;
+    try {
+      await setDoc(doc(db, 'roles', id), { permissions: [] }, { merge: true });
+      toast({ title: 'Role added', description: `Role ${id} created` });
+      logAudit('role_create', { role: id }, user?.id);
+      setNewRole('');
+      const snap = await getDocs(query(collection(db, 'roles')));
+      setRoles(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })));
+    } catch {
+      toast({ title: 'Error', description: 'Failed to create role', variant: 'destructive' });
+    }
+  };
+
+  const deleteRole = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'roles', id));
+      toast({ title: 'Role deleted', description: id });
+      logAudit('role_delete', { role: id }, user?.id);
+      const snap = await getDocs(query(collection(db, 'roles')));
+      setRoles(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })));
+    } catch {
+      toast({ title: 'Error', description: 'Failed to delete role', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -57,6 +85,13 @@ export default function Permissions() {
           <p className="text-muted-foreground">Loading roles...</p>
         ) : (
           <div className="space-y-4">
+            <div className="flex items-end gap-2 border-b pb-4">
+              <div className="flex-1">
+                <Label>New Role</Label>
+                <Input placeholder="e.g., reviewer" value={newRole} onChange={(e) => setNewRole(e.target.value)} />
+              </div>
+              <Button className="btn-primary" onClick={addRole}>Add Role</Button>
+            </div>
             {roles.map((r) => (
               <div key={r.id} className="grid md:grid-cols-3 gap-4 items-end border-b pb-4">
                 <div>
@@ -70,8 +105,9 @@ export default function Permissions() {
                     onChange={(e) => setEditing({ ...editing, [r.id]: e.target.value })}
                   />
                 </div>
-                <div>
+                <div className="flex gap-2">
                   <Button className="btn-primary" onClick={() => save(r.id)}>Save</Button>
+                  <Button variant="outline" onClick={() => deleteRole(r.id)}>Delete</Button>
                 </div>
               </div>
             ))}

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { auth } from '@/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,19 +17,26 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
+  const [isResetting, setIsResetting] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const success = await login(email, password);
+    const result = await login(email, password);
     
-    if (success) {
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-        variant: "default",
-      });
+    if (result.success) {
+      if (result.redirect) {
+        navigate(result.redirect);
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+          variant: "default",
+        });
+        navigate('/');
+      }
     } else {
       toast({
         title: "Login failed",
@@ -86,6 +96,43 @@ export function LoginForm() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Forgot your password?</span>
+                <button
+                  type="button"
+                  className="text-primary hover:underline disabled:opacity-50"
+                  disabled={isResetting || !email}
+                  onClick={async () => {
+                    if (!email) {
+                      toast({
+                        title: 'Enter your email',
+                        description: 'Please provide the email you use to sign in.',
+                        variant: 'default',
+                      });
+                      return;
+                    }
+                    try {
+                      setIsResetting(true);
+                      await sendPasswordResetEmail(auth, email);
+                      toast({
+                        title: 'Password reset sent',
+                        description: 'Check your inbox for a reset link.',
+                        variant: 'default',
+                      });
+                    } catch (err) {
+                      toast({
+                        title: 'Could not send reset email',
+                        description: 'Verify the email is correct and try again.',
+                        variant: 'destructive',
+                      });
+                    } finally {
+                      setIsResetting(false);
+                    }
+                  }}
+                >
+                  {isResetting ? 'Sending…' : 'Reset password'}
+                </button>
+              </div>
             </div>
 
             <Button
@@ -105,6 +152,9 @@ export function LoginForm() {
                 </div>
               )}
             </Button>
+            <div className="text-center text-sm">
+              New here? <a href="/signup" className="text-primary hover:underline">Create an account</a>
+            </div>
           </form>
 
         </Card>

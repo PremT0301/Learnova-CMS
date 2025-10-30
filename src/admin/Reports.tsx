@@ -6,9 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { db, functions } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
-type ReportType = 'course_completion' | 'average_grades' | 'user_growth';
+type ReportType = 'course_completion' | 'average_grades' | 'user_growth' | 'department_performance' | 'enrollment_trends' | 'grade_distribution';
 
 export default function Reports() {
   const { toast } = useToast();
@@ -24,7 +24,7 @@ export default function Reports() {
       try {
         const { httpsCallable } = await import('firebase/functions');
         const call = httpsCallable(functions, 'generateReport');
-        const res: any = await call({ type: report });
+        const res: any = await call({ type: report, filters });
         setData(res.data.data ?? []);
       } catch {
         toast({ title: 'Error', description: 'Failed to load report data', variant: 'destructive' });
@@ -69,6 +69,9 @@ export default function Reports() {
                 <SelectItem value="course_completion">Course Completion</SelectItem>
                 <SelectItem value="average_grades">Average Grades</SelectItem>
                 <SelectItem value="user_growth">User Growth</SelectItem>
+                <SelectItem value="department_performance">Department Performance</SelectItem>
+                <SelectItem value="enrollment_trends">Enrollment Trends</SelectItem>
+                <SelectItem value="grade_distribution">Grade Distribution</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -93,8 +96,62 @@ export default function Reports() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={2} />
+                  <Line type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={2} name="Monthly Growth" />
+                  <Line type="monotone" dataKey="cumulative" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" name="Total Users" />
                 </LineChart>
+              ) : report === 'course_completion' ? (
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="enrolled" fill="#4f46e5" name="Enrolled" />
+                  <Bar dataKey="capacity" fill="#94a3b8" name="Capacity" />
+                </BarChart>
+              ) : report === 'average_grades' ? (
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Average Grade']} />
+                  <Bar dataKey="value" fill="#10b981" />
+                </BarChart>
+              ) : report === 'department_performance' ? (
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="faculty" fill="#f59e0b" name="Faculty" />
+                  <Bar dataKey="students" fill="#10b981" name="Students" />
+                  <Bar dataKey="courses" fill="#4f46e5" name="Courses" />
+                </BarChart>
+              ) : report === 'enrollment_trends' ? (
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="enrollments" stroke="#4f46e5" strokeWidth={2} />
+                </LineChart>
+              ) : report === 'grade_distribution' ? (
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#6b7280'][index % 5]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
               ) : (
                 <BarChart data={data}>
                   <CartesianGrid strokeDasharray="3 3" />

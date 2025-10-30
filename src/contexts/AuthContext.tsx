@@ -3,10 +3,11 @@ import { User, UserRole } from '@/types';
 import { auth, db } from '@/firebase';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, setDoc } from 'firebase/firestore';
+import { listenFacultyRequestByEmail } from '@/services/firebaseService';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; redirect?: string }>;
   logout: () => void;
   isLoading: boolean;
   // Admin-only actions
@@ -105,6 +106,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      // Check if signup is in progress - if so, don't interfere
+      const signupInProgress = sessionStorage.getItem('signup_in_progress');
+      if (signupInProgress === 'true') {
+        console.log('Signup in progress, skipping auth state change handling');
+        setIsLoading(false);
+        return;
+      }
+
       if (firebaseUser) {
         const appUser = await buildAppUser(firebaseUser.uid, firebaseUser.email);
         if (!appUser) {
@@ -122,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; redirect?: string }> => {
     setIsLoading(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
@@ -131,12 +140,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!appUser) {
         await signOut(auth);
         setUser(null);
-        return false;
+        return { success: false };
       }
+      
+      // Check faculty request status for faculty users
+      if (appUser.role === 'faculty' && !appUser.active) {
+        return new Promise((resolve) => {
+          const unsub = listenFacultyRequestByEmail(email.toLowerCase(), (request) => {
+            unsub();
+            if (request?.status === 'pending') {
+              resolve({ success: true, redirect: '/request-under-review' });
+            } else if (request?.status === 'rejected') {
+              resolve({ success: true, redirect: '/request-denied' });
+            } else {
+              // Approved or no request found, proceed normally
+              setUser(appUser);
+              resolve({ success: true });
+            }
+          });
+        });
+      }
+      
       setUser(appUser);
-      return true;
+      return { success: true };
     } catch {
-      return false;
+      return { success: false };
     } finally {
       setIsLoading(false);
     }

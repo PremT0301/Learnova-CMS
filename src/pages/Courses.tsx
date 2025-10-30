@@ -2,120 +2,95 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Users, Calendar, Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, Plus, Users, Calendar, Star, BookOpen, TrendingUp, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import type { Course } from '@/types';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  listenCourses, 
+  listenCoursesByInstructor, 
+  listenCoursesByStudent,
+  createCourse,
+  updateCourse,
+  enrollStudentInCourse,
+  Course
+} from '@/services/firebaseService';
 
 export default function Courses() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [enrolling, setEnrolling] = useState<string | null>(null);
 
-  const demoCourses: Course[] = [
-    {
-      id: '1',
-      title: 'Data Structures & Algorithms',
-      code: 'CS-301',
-      instructor: 'Prof. Michael Chen',
-      description: 'Learn fundamental data structures and algorithms essential for computer science.',
-      department: 'Computer Science',
-      credits: 3,
-      capacity: 50,
-      enrolled: 45,
-      startDate: '2024-01-15',
-      endDate: '2024-05-15',
-      status: 'active' as const,
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=200&fit=crop'
-    },
-    {
-      id: '2',
-      title: 'Database Management Systems',
-      code: 'CS-401',
-      instructor: 'Dr. Sarah Smith',
-      description: 'Comprehensive study of database design, implementation, and management.',
-      department: 'Computer Science',
-      credits: 4,
-      capacity: 40,
-      enrolled: 38,
-      startDate: '2024-01-15',
-      endDate: '2024-05-15',
-      status: 'active' as const,
-      rating: 4.6,
-      image: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=400&h=200&fit=crop'
-    },
-    {
-      id: '3',
-      title: 'Web Development Fundamentals',
-      code: 'CS-350',
-      instructor: 'Prof. Emily Johnson',
-      description: 'Modern web development using HTML, CSS, JavaScript, and popular frameworks.',
-      department: 'Computer Science',
-      credits: 3,
-      capacity: 35,
-      enrolled: 32,
-      startDate: '2024-01-15',
-      endDate: '2024-05-15',
-      status: 'active' as const,
-      rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=400&h=200&fit=crop'
-    },
-    {
-      id: '4',
-      title: 'Machine Learning Introduction',
-      code: 'CS-450',
-      instructor: 'Dr. Robert Wilson',
-      description: 'Introduction to machine learning concepts, algorithms, and applications.',
-      department: 'Computer Science',
-      credits: 4,
-      capacity: 30,
-      enrolled: 28,
-      startDate: '2024-01-15',
-      endDate: '2024-05-15',
-      status: 'active' as const,
-      rating: 4.7,
-      image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=200&fit=crop'
-    }
-  ];
-
-  const [courses, setCourses] = useState<Course[]>(demoCourses);
-  const [isLoading, setIsLoading] = useState(true);
-
+  // Real-time Firebase listeners
   useEffect(() => {
-    async function fetchCourses() {
-      try {
-        const snapshot = await getDocs(collection(db, 'courses'));
-        const loaded: Course[] = snapshot.docs.map((doc) => {
-          const data = doc.data() as Partial<Course> & { title?: string; code?: string };
-          return {
-            id: doc.id,
-            title: data.title ?? 'Untitled Course',
-            code: data.code ?? 'N/A',
-            description: data.description ?? '',
-            instructor: data.instructor ?? 'TBD',
-            instructorId: (data as any).instructorId ?? '',
-            department: data.department ?? 'General',
-            credits: data.credits ?? 0,
-            capacity: data.capacity ?? 0,
-            enrolled: data.enrolled ?? 0,
-            startDate: (data as any).startDate ?? '',
-            endDate: (data as any).endDate ?? '',
-            status: (data.status ?? 'active') as Course['status'],
-            image: data.image,
-          };
+    if (!user?.id) return;
+
+    setLoading(true);
+    let unsubscribe: (() => void) | undefined;
+
+    const initializeRealTimeData = () => {
+      if (user.role === 'faculty') {
+        // Faculty sees their own courses
+        unsubscribe = listenCoursesByInstructor(user.id, (coursesData) => {
+          setCourses(coursesData);
+          setLoading(false);
         });
-        if (loaded.length > 0) {
-          setCourses(loaded);
-        }
-      } catch {
-        // keep demo courses on error
-      } finally {
-        setIsLoading(false);
+      } else if (user.role === 'student') {
+        // Students see courses they're enrolled in
+        unsubscribe = listenCoursesByStudent(user.id, (coursesData) => {
+          setCourses(coursesData);
+          setLoading(false);
+        });
+      } else {
+        // Admin sees all courses
+        unsubscribe = listenCourses((coursesData) => {
+          setCourses(coursesData);
+          setLoading(false);
+        });
       }
+    };
+
+    initializeRealTimeData();
+
+    // Cleanup listener on unmount
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [user?.id, user?.role]);
+
+  const handleEnroll = async (courseId: string) => {
+    if (!user?.id) return;
+
+    setEnrolling(courseId);
+    try {
+      const result = await enrollStudentInCourse(courseId, user.id);
+      if (result.success) {
+        toast({
+          title: 'Enrollment Successful',
+          description: 'You have been enrolled in this course',
+          variant: 'default'
+        });
+      } else {
+        toast({
+          title: 'Enrollment Failed',
+          description: result.error || 'Failed to enroll in course',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error enrolling in course:', error);
+      toast({
+        title: 'Enrollment Failed',
+        description: 'An unexpected error occurred',
+        variant: 'destructive'
+      });
+    } finally {
+      setEnrolling(null);
     }
-    fetchCourses();
-  }, []);
+  };
 
   const filteredCourses = courses.filter(course => 
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -160,87 +135,140 @@ export default function Courses() {
         </div>
       </Card>
 
-      {isLoading && (
-        <Card className="card-academic p-12 text-center">
-          <p className="text-muted-foreground text-lg">Loading courses...</p>
+      {/* Statistics */}
+      <div className="grid md:grid-cols-4 gap-4">
+        <Card className="card-academic p-6">
+          <div className="flex items-center gap-3">
+            <BookOpen className="text-primary" size={24} />
+            <div>
+              <p className="text-sm text-muted-foreground">Total Courses</p>
+              <p className="text-2xl font-bold">{courses.length}</p>
+            </div>
+          </div>
         </Card>
-      )}
-
-      {/* Courses Grid */}
-      <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredCourses.map((course) => (
-          <Card key={course.id} className="card-academic card-hover overflow-hidden">
-            <div className="aspect-video relative overflow-hidden">
-              <img 
-                src={course.image} 
-                alt={course.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-sm font-medium">
-                {course.code}
-              </div>
+        <Card className="card-academic p-6">
+          <div className="flex items-center gap-3">
+            <TrendingUp className="text-success" size={24} />
+            <div>
+              <p className="text-sm text-muted-foreground">Active Courses</p>
+              <p className="text-2xl font-bold">{courses.filter(c => c.status === 'active').length}</p>
             </div>
-            
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-lg text-foreground mb-1">{course.title}</h3>
-                  <p className="text-muted-foreground text-sm">{course.instructor}</p>
-                </div>
-                <div className="flex items-center gap-1 text-warning">
-                  <Star size={16} fill="currentColor" />
-                  <span className="text-sm font-medium">{(course as any).rating ?? '4.8'}</span>
-                </div>
-              </div>
-
-              <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                {course.description}
-              </p>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users size={16} />
-                    <span>{course.enrolled}/{course.capacity} enrolled</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar size={16} />
-                    <span>{course.credits} credits</span>
-                  </div>
-                </div>
-
-                <div className="progress-academic">
-                  <div 
-                    className="progress-fill" 
-                    style={{ width: `${(course.capacity ? (course.enrolled / course.capacity) * 100 : 0)}%` }} 
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  {user?.role === 'student' ? (
-                    <Button className="flex-1 btn-primary">
-                      Enroll Now
-                    </Button>
-                  ) : (
-                    <Button className="flex-1" variant="outline">
-                      View Details
-                    </Button>
-                  )}
-                  <Button variant="outline" size="sm">
-                    <Star size={16} />
-                  </Button>
-                </div>
-              </div>
+          </div>
+        </Card>
+        <Card className="card-academic p-6">
+          <div className="flex items-center gap-3">
+            <Users className="text-warning" size={24} />
+            <div>
+              <p className="text-sm text-muted-foreground">Total Enrollments</p>
+              <p className="text-2xl font-bold">{courses.reduce((sum, c) => sum + (c.enrolled || 0), 0)}</p>
             </div>
-          </Card>
-        ))}
+          </div>
+        </Card>
+        <Card className="card-academic p-6">
+          <div className="flex items-center gap-3">
+            <Clock className="text-accent" size={24} />
+            <div>
+              <p className="text-sm text-muted-foreground">This Semester</p>
+              <p className="text-2xl font-bold">{courses.filter(c => c.status === 'active').length}</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
-      {!isLoading && filteredCourses.length === 0 && (
+      {loading ? (
         <Card className="card-academic p-12 text-center">
-          <p className="text-muted-foreground text-lg">No courses found matching your search.</p>
-          <p className="text-muted-foreground text-sm mt-2">Try adjusting your search terms or browse all courses.</p>
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground text-lg">Loading courses...</p>
         </Card>
+      ) : filteredCourses.length === 0 ? (
+        <Card className="card-academic p-12 text-center">
+          <BookOpen className="text-muted-foreground mx-auto mb-4" size={48} />
+          <p className="text-lg font-medium mb-2">No courses found</p>
+          <p className="text-muted-foreground">
+            {searchTerm ? 'Try adjusting your search terms' : 'No courses have been created yet'}
+          </p>
+        </Card>
+      ) : (
+        /* Courses Grid */
+        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredCourses.map((course) => (
+            <Card key={course.id} className="card-academic card-hover overflow-hidden">
+              <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <BookOpen className="text-primary/50" size={48} />
+                </div>
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-sm font-medium">
+                  {course.code}
+                </div>
+                <div className="absolute top-4 left-4">
+                  <Badge variant={course.status === 'active' ? 'default' : 'secondary'}>
+                    {course.status}
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="font-semibold text-lg text-foreground mb-1">{course.title}</h3>
+                    <p className="text-muted-foreground text-sm">{course.instructor}</p>
+                  </div>
+                  <div className="flex items-center gap-1 text-warning">
+                    <Star size={16} fill="currentColor" />
+                    <span className="text-sm font-medium">4.8</span>
+                  </div>
+                </div>
+
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                  {course.description}
+                </p>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Users size={16} />
+                      <span>{course.enrolled || 0}/{course.capacity || 0} enrolled</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar size={16} />
+                      <span>{course.credits} credits</span>
+                    </div>
+                  </div>
+
+                  <div className="progress-academic">
+                    <div 
+                      className="progress-fill" 
+                      style={{ width: `${(course.capacity ? ((course.enrolled || 0) / course.capacity) * 100 : 0)}%` }} 
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    {user?.role === 'student' ? (
+                      <Button 
+                        className="flex-1 btn-primary"
+                        onClick={() => handleEnroll(course.id)}
+                        disabled={enrolling === course.id}
+                      >
+                        {enrolling === course.id ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          'Enroll Now'
+                        )}
+                      </Button>
+                    ) : (
+                      <Button className="flex-1" variant="outline">
+                        View Details
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm">
+                      <Star size={16} />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );

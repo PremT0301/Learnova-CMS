@@ -1,14 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { facultyCourseService } from '@/services/facultyService';
 import { Users, Search, Mail, Phone, Award, TrendingUp } from 'lucide-react';
 
 export default function MyStudents() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [students, setStudents] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const students = [
+  useEffect(() => {
+    if (user?.id) {
+      loadStudents();
+      loadCourses();
+    }
+  }, [user]);
+
+  const loadCourses = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const coursesData = await facultyCourseService.getFacultyCourses(user.id);
+      setCourses(coursesData);
+    } catch (error) {
+      console.error('Error loading courses:', error);
+    }
+  };
+
+  const loadStudents = async () => {
+    if (!user?.id || courses.length === 0) return;
+    
+    try {
+      const allStudents = [];
+      for (const course of courses) {
+        const courseStudents = await facultyCourseService.getCourseStudents(course.id);
+        allStudents.push(...courseStudents.map(student => ({
+          ...student,
+          courseId: course.id,
+          courseCode: course.code
+        })));
+      }
+      setStudents(allStudents);
+    } catch (error) {
+      console.error('Error loading students:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load students',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fallbackStudents = [
     {
       id: '1',
       name: 'John Doe',

@@ -1,21 +1,53 @@
-import React from 'react';
-import { Bell, Search, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bell, Search, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NavLink, useLocation } from 'react-router-dom';
 import LearnovaLogo from '@/components/images/LEARNOVA-T.png';
+import { Sidebar } from './Sidebar';
+import { FacultySidebar } from './FacultySidebar';
+import { StudentSidebar } from './StudentSidebar';
 
 export function Header() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   const isAdminSection = location.pathname.startsWith('/admin');
+  const isFacultySection = location.pathname.startsWith('/faculty') || 
+                          location.pathname === '/faculty-dashboard' ||
+                          location.pathname === '/students' ||
+                          location.pathname === '/gradebook' ||
+                          (location.pathname === '/courses' && user?.role === 'faculty') ||
+                          location.pathname === '/support' ||
+                          (location.pathname === '/dashboard' && user?.role === 'faculty');
+  const isStudentSection = location.pathname.startsWith('/student') ||
+                          location.pathname === '/student-dashboard' ||
+                          (location.pathname === '/courses' && user?.role === 'student') ||
+                          location.pathname === '/grades' ||
+                          (location.pathname === '/dashboard' && user?.role === 'student');
 
   return (
     <header className="bg-card border-b border-border px-4 py-3 lg:px-6">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-6 min-w-0">
-          <NavLink to={isAdminSection ? '/admin/dashboard' : '/dashboard'} className="flex items-center gap-2 shrink-0">
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lg:hidden"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          
+          <NavLink to={
+            isAdminSection ? '/admin/dashboard' : 
+            isFacultySection ? '/faculty-dashboard' : 
+            isStudentSection ? '/student-dashboard' : 
+            '/dashboard'
+          } className="flex items-center gap-2 shrink-0">
             <img
               src={LearnovaLogo}
               alt="Learnova logo"
@@ -33,10 +65,76 @@ export function Header() {
                   Dashboard
                 </NavLink>
                 <NavLink
-                  to="/admin/analytics"
+                  to="/admin/users"
                   className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
                 >
-                  Analytics
+                  Users
+                </NavLink>
+                <NavLink
+                  to="/admin/configuration"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  Settings
+                </NavLink>
+                <NavLink
+                  to="/admin/announcements"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  Announcements
+                </NavLink>
+              </>
+            ) : isFacultySection ? (
+              <>
+                <NavLink
+                  to="/faculty-dashboard"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  Dashboard
+                </NavLink>
+                <NavLink
+                  to="/courses"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  My Courses
+                </NavLink>
+                <NavLink
+                  to="/students"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  My Students
+                </NavLink>
+                <NavLink
+                  to="/gradebook"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  Gradebook
+                </NavLink>
+              </>
+            ) : isStudentSection ? (
+              <>
+                <NavLink
+                  to="/student-dashboard"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  Dashboard
+                </NavLink>
+                <NavLink
+                  to="/courses"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  My Courses
+                </NavLink>
+                <NavLink
+                  to="/student/assignments"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  Assignments
+                </NavLink>
+                <NavLink
+                  to="/grades"
+                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
+                >
+                  My Grades
                 </NavLink>
               </>
             ) : (
@@ -53,20 +151,6 @@ export function Header() {
                 >
                   Courses
                 </NavLink>
-                <NavLink
-                  to="/assignments"
-                  className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
-                >
-                  Assignments
-                </NavLink>
-                {user?.role === 'student' && (
-                  <NavLink
-                    to="/grades"
-                    className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
-                  >
-                    My Grades
-                  </NavLink>
-                )}
                 {user?.role === 'faculty' && (
                   <>
                     <NavLink
@@ -84,10 +168,10 @@ export function Header() {
                   </>
                 )}
                 <NavLink
-                  to="/messages"
+                  to="/support"
                   className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
                 >
-                  Messages
+                  Support
                 </NavLink>
                 {user?.role === 'admin' && (
                   <NavLink
@@ -144,6 +228,29 @@ export function Header() {
           </div>
         </div>
       </div>
+      
+      {/* Mobile Sidebars */}
+      {isAdminSection && (
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+          isDesktop={false} 
+        />
+      )}
+      {isFacultySection && (
+        <FacultySidebar 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+          isDesktop={false} 
+        />
+      )}
+      {isStudentSection && (
+        <StudentSidebar 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+          isDesktop={false} 
+        />
+      )}
     </header>
   );
 }

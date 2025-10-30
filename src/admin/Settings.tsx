@@ -14,12 +14,16 @@ type SettingsDoc = {
   grading: { gpaScale: number; passThreshold: number };
   notifications: { email: boolean; inApp: boolean };
   features: { gamification: boolean; peerReviews: boolean };
+  branding?: { appName?: string; logoUrl?: string; primaryColor?: string };
+  security?: { twoFactor?: boolean };
 };
 
 const DEFAULT_SETTINGS: SettingsDoc = {
   grading: { gpaScale: 4.0, passThreshold: 50 },
   notifications: { email: true, inApp: true },
   features: { gamification: false, peerReviews: false },
+  branding: { appName: 'Learnova', logoUrl: '', primaryColor: '#4f46e5' },
+  security: { twoFactor: false },
 };
 
 export default function Settings() {
@@ -118,6 +122,36 @@ export default function Settings() {
                 onCheckedChange={(v) => setSettings({ ...settings, features: { ...settings.features, peerReviews: v } })}
               />
             </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <Label>App Name</Label>
+            <Input value={settings.branding?.appName ?? ''}
+              onChange={(e) => setSettings({ ...settings, branding: { ...(settings.branding ?? {}), appName: e.target.value } })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Logo URL</Label>
+            <Input value={settings.branding?.logoUrl ?? ''}
+              onChange={(e) => setSettings({ ...settings, branding: { ...(settings.branding ?? {}), logoUrl: e.target.value } })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Primary Color</Label>
+            <Input type="color" value={settings.branding?.primaryColor ?? '#4f46e5'}
+              onChange={(e) => setSettings({ ...settings, branding: { ...(settings.branding ?? {}), primaryColor: e.target.value } })}
+            />
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label>Require Two-Factor (2FA) for Admins</Label>
+            <Switch checked={settings.security?.twoFactor ?? false}
+              onCheckedChange={(v) => setSettings({ ...settings, security: { ...(settings.security ?? {}), twoFactor: v } })}
+            />
           </div>
         </div>
 

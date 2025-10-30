@@ -9,14 +9,14 @@ import { useToast } from '@/hooks/use-toast';
 import { logAudit } from '@/lib/audit';
 import { useAuth } from '@/contexts/AuthContext';
 
-type Invite = { id: string; email: string; role: 'student'|'faculty'|'admin'; status: 'sent'|'accepted'|'expired'|'revoked'; createdAt: string };
+type Invite = { id: string; email: string; role: 'student'|'faculty'|'admin'; status: 'sent'|'accepted'|'expired'|'revoked'; createdAt: string; expiresAt?: string };
 
 export default function Invites() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [list, setList] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ email: '', role: 'student' as Invite['role'] });
+  const [form, setForm] = useState({ email: '', role: 'student' as Invite['role'], expiresInDays: 7 });
 
   const load = async () => {
     setLoading(true);
@@ -41,11 +41,11 @@ export default function Invites() {
     try {
       const { httpsCallable } = await import('firebase/functions');
       const call = httpsCallable(functions, 'sendInvite');
-      await call({ email, role: form.role });
+      await call({ email, role: form.role, expiresInDays: form.expiresInDays });
       const payload = { email, role: form.role, status: 'sent', createdAt: new Date().toISOString() };
       logAudit('invite_send', payload as any, user?.id);
       toast({ title: 'Invite sent', description: `Invitation sent to ${email}` });
-      setForm({ email: '', role: 'student' });
+      setForm({ email: '', role: 'student', expiresInDays: 7 });
       await load();
     } catch {
       toast({ title: 'Error', description: 'Failed to send invite', variant: 'destructive' });
@@ -70,7 +70,7 @@ export default function Invites() {
       </div>
 
       <Card className="card-academic p-6">
-        <form onSubmit={sendInvite} className="grid md:grid-cols-3 gap-4 items-end">
+        <form onSubmit={sendInvite} className="grid md:grid-cols-4 gap-4 items-end">
           <div className="space-y-2">
             <Label>Email</Label>
             <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
@@ -82,6 +82,10 @@ export default function Invites() {
               <option value="faculty">Faculty</option>
               <option value="admin">Admin</option>
             </select>
+          </div>
+          <div className="space-y-2">
+            <Label>Expires In (days)</Label>
+            <Input type="number" min={1} max={60} value={form.expiresInDays} onChange={(e) => setForm({ ...form, expiresInDays: Number(e.target.value) })} />
           </div>
           <div>
             <Button type="submit" className="btn-primary">Send Invite</Button>
@@ -101,6 +105,7 @@ export default function Invites() {
                   <th className="py-2">Role</th>
                   <th className="py-2">Status</th>
                   <th className="py-2">Created</th>
+                  <th className="py-2">Expires</th>
                   <th className="py-2">Actions</th>
                 </tr>
               </thead>
@@ -111,9 +116,20 @@ export default function Invites() {
                     <td className="py-3 capitalize">{inv.role}</td>
                     <td className="py-3 capitalize">{inv.status}</td>
                     <td className="py-3">{inv.createdAt}</td>
+                    <td className="py-3">{inv.expiresAt ?? '-'}</td>
                     <td className="py-3">
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => updateStatus(inv.id, 'sent')}>Resend</Button>
+                        <Button size="sm" variant="outline" onClick={async () => {
+                          try {
+                            const { httpsCallable } = await import('firebase/functions');
+                            const call = httpsCallable(functions, 'sendInvite');
+                            await call({ email: inv.email, role: inv.role, expiresInDays: 7 });
+                            toast({ title: 'Invite resent', description: `Invitation resent to ${inv.email}` });
+                            await load();
+                          } catch {
+                            toast({ title: 'Error', description: 'Failed to resend invite', variant: 'destructive' });
+                          }
+                        }}>Resend</Button>
                         <Button size="sm" variant="outline" onClick={() => updateStatus(inv.id, 'revoked')}>Revoke</Button>
                       </div>
                     </td>

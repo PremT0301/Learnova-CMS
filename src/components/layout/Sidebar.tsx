@@ -1,164 +1,252 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Users, 
-  FileText, 
-  BarChart3, 
-  Settings, 
-  UserCheck,
-  GraduationCap,
-  Bell,
-  MessageSquare,
-  LogOut,
-  Mail,
-  Activity
+  Building2, FileBarChart, History, ShieldCheck, Mail, Activity, 
+  LifeBuoy, Database, UserCheck, BookOpen, Settings, ClipboardList, 
+  Award, Eye, FolderOpen, Plug, TrendingUp, Code, Lock, X
 } from 'lucide-react';
-import LearnovaLogo from '@/components/images/LEARNOVA-T.png';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  isDesktop?: boolean;
 }
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { user, logout } = useAuth();
+const adminModules = [
+  {
+    icon: Building2,
+    label: 'Departments',
+    path: '/admin/departments',
+    description: 'Create and manage departments'
+  },
+  {
+    icon: FileBarChart,
+    label: 'Reports',
+    path: '/admin/reports',
+    description: 'Generate performance reports'
+  },
+  {
+    icon: UserCheck,
+    label: 'Faculty Verification',
+    path: '/admin/faculty-verification',
+    description: 'Approve or reject faculty signups'
+  },
+  {
+    icon: History,
+    label: 'Audit Logs',
+    path: '/admin/logs',
+    description: 'Review system changes'
+  },
+  {
+    icon: ShieldCheck,
+    label: 'Permissions',
+    path: '/admin/permissions',
+    description: 'Define roles and access rules'
+  },
+  {
+    icon: Mail,
+    label: 'Invites',
+    path: '/admin/invites',
+    description: 'Manage invitations'
+  },
+  {
+    icon: Activity,
+    label: 'Health',
+    path: '/admin/health',
+    description: 'Check service status'
+  },
+  {
+    icon: LifeBuoy,
+    label: 'Support',
+    path: '/admin/support',
+    description: 'Manage support tickets'
+  },
+  {
+    icon: Database,
+    label: 'Backup',
+    path: '/admin/backup',
+    description: 'Manage system backups'
+  },
+  {
+    icon: UserCheck,
+    label: 'User Impersonation',
+    path: '/admin/impersonation',
+    description: 'Impersonate users for debugging'
+  },
+  {
+    icon: BookOpen,
+    label: 'Course Management',
+    path: '/admin/courses',
+    description: 'Manage courses and programs'
+  },
+  {
+    icon: ClipboardList,
+    label: 'Assignment Management',
+    path: '/admin/assignments',
+    description: 'Manage assignments'
+  },
+  {
+    icon: Award,
+    label: 'Grade Management',
+    path: '/admin/grades',
+    description: 'Oversee and review grades'
+  },
+  {
+    icon: Eye,
+    label: 'User Activity Monitoring',
+    path: '/admin/activity',
+    description: 'Monitor user sessions'
+  },
+  {
+    icon: FolderOpen,
+    label: 'Content Management',
+    path: '/admin/content',
+    description: 'Manage files and resources'
+  },
+  {
+    icon: Plug,
+    label: 'Integration Management',
+    path: '/admin/integrations',
+    description: 'Configure external services'
+  },
+  {
+    icon: TrendingUp,
+    label: 'Advanced Analytics',
+    path: '/admin/advanced-analytics',
+    description: 'Custom reports and insights'
+  },
+  {
+    icon: Code,
+    label: 'API Management',
+    path: '/admin/api-management',
+    description: 'Manage API keys and endpoints'
+  },
+  {
+    icon: Lock,
+    label: 'Advanced Security',
+    path: '/admin/advanced-security',
+    description: 'Security policies and monitoring'
+  }
+];
 
-  const getMenuItems = () => {
-    const commonItems = [
-      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      { to: '/courses', icon: BookOpen, label: 'Courses' },
-      { to: '/assignments', icon: FileText, label: 'Assignments' },
-      { to: '/notifications', icon: Bell, label: 'Notifications' },
-      { to: '/messages', icon: MessageSquare, label: 'Messages' },
-    ];
+export function Sidebar({ isOpen, onClose, isDesktop = false }: SidebarProps) {
+  if (isDesktop) {
+    return (
+      <div className="hidden lg:block w-80 bg-card border-r border-border h-full overflow-y-auto">
+        <div className="p-6">
+          {/* Header */}
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold">Admin Modules</h2>
+          </div>
 
-    switch (user?.role) {
-      case 'admin':
-        // Admin isolation: show only admin section links
-        return [
-          { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Admin Dashboard' },
-          { to: '/admin/users', icon: Users, label: 'Users' },
-          { to: '/admin/departments', icon: Users, label: 'Departments' },
-          { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
-          { to: '/admin/reports', icon: BarChart3, label: 'Reports' },
-          { to: '/admin/announcements', icon: MessageSquare, label: 'Announcements' },
-          { to: '/admin/logs', icon: FileText, label: 'Audit Logs' },
-          { to: '/admin/backups', icon: Settings, label: 'Backups' },
-          { to: '/admin/impersonation', icon: UserCheck, label: 'Impersonation' },
-          { to: '/admin/permissions', icon: UserCheck, label: 'Permissions' },
-          { to: '/admin/invites', icon: Mail, label: 'Invites' },
-          { to: '/admin/health', icon: Activity, label: 'Health' },
-          { to: '/admin/support', icon: MessageSquare, label: 'Support' },
-          { to: '/admin/settings', icon: Settings, label: 'System Settings' },
-        ];
-      case 'faculty':
-        return [
-          ...commonItems,
-          { to: '/students', icon: UserCheck, label: 'My Students' },
-          { to: '/gradebook', icon: BarChart3, label: 'Gradebook' },
-          { to: '/profile', icon: Settings, label: 'Profile' },
-        ];
-      case 'student':
-        return [
-          ...commonItems,
-          { to: '/grades', icon: GraduationCap, label: 'My Grades' },
-          { to: '/profile', icon: Settings, label: 'Profile' },
-        ];
-      default:
-        return commonItems;
-    }
-  };
-
-  const menuItems = getMenuItems();
+          {/* Modules Grid */}
+          <div className="space-y-3">
+            {adminModules.map((module) => (
+              <NavLink
+                key={module.path}
+                to={module.path}
+                className={({ isActive }) => `
+                  block p-3 rounded-lg border transition-all duration-200
+                  ${isActive 
+                    ? 'bg-primary/10 border-primary/20 text-primary' 
+                    : 'bg-muted/30 border-border hover:bg-muted/50 hover:border-primary/20'
+                  }
+                `}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5">
+                    <module.icon size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm leading-none mb-1">
+                      {module.label}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {module.description}
+                    </p>
+                  </div>
+                </div>
+              </NavLink>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
+      {/* Backdrop */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Sidebar */}
-      <aside className={`
-        fixed left-0 top-0 h-full w-64 nav-academic z-50 transform transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:static lg:z-auto
-      `}>
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="p-6 border-b border-nav-foreground/10">
-            <div className="flex items-center gap-3">
-              <img src={LearnovaLogo} alt="Learnova logo" className="h-9 w-auto object-contain" />
-              <h1 className="text-2xl font-bold text-nav-foreground">Learnova</h1>
-            </div>
-            <p className="text-nav-foreground/70 text-sm mt-1">Learning Management</p>
-          </div>
-
-          {/* User Info */}
-          <div className="p-4 border-b border-nav-foreground/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-nav-accent/20 flex items-center justify-center">
-                {user?.avatar ? (
-                  <img 
-                    src={user.avatar} 
-                    alt={user.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="text-nav-accent font-semibold">
-                    {user?.name.charAt(0)}
-                  </span>
-                )}
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'tween', duration: 0.3 }}
+            className="fixed left-0 top-0 h-full w-80 bg-card border-r border-border z-50 overflow-y-auto"
+          >
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold">Admin Modules</h2>
+                <Button variant="ghost" size="sm" onClick={onClose}>
+                  <X size={20} />
+                </Button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-nav-foreground font-medium truncate">{user?.name}</p>
-                <p className="text-nav-foreground/60 text-sm capitalize">{user?.role}</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4">
-            <ul className="space-y-2">
-              {menuItems.map((item) => (
-                <li key={item.to}>
+              {/* Modules Grid */}
+              <div className="space-y-3">
+                {adminModules.map((module) => (
                   <NavLink
-                    to={item.to}
+                    key={module.path}
+                    to={module.path}
                     onClick={onClose}
                     className={({ isActive }) => `
-                      flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200
+                      block p-3 rounded-lg border transition-all duration-200
                       ${isActive 
-                        ? 'bg-nav-accent text-white shadow-lg' 
-                        : 'text-nav-foreground/70 hover:text-nav-foreground hover:bg-nav-foreground/5'
+                        ? 'bg-primary/10 border-primary/20 text-primary' 
+                        : 'bg-muted/30 border-border hover:bg-muted/50 hover:border-primary/20'
                       }
                     `}
                   >
-                    <item.icon size={20} />
-                    <span className="font-medium">{item.label}</span>
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5">
+                        <module.icon size={18} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm leading-none mb-1">
+                          {module.label}
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {module.description}
+                        </p>
+                      </div>
+                    </div>
                   </NavLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Logout */}
-          <div className="p-4 border-t border-nav-foreground/10">
-            <button
-              onClick={logout}
-              className="flex items-center gap-3 px-4 py-3 w-full text-nav-foreground/70 hover:text-nav-foreground hover:bg-nav-foreground/5 rounded-lg transition-colors duration-200"
-            >
-              <LogOut size={20} />
-              <span className="font-medium">Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </aside>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

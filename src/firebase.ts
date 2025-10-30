@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
+import { getStorage } from 'firebase/storage';
 
 // Load config from environment variables
 const firebaseConfig = {
@@ -15,6 +16,10 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId || !firebaseConfig.appId) {
+  // eslint-disable-next-line no-console
+  console.error('[Firebase] Missing configuration. Check your .env.local VITE_FIREBASE_* variables.');
+}
 export const app = initializeApp(firebaseConfig);
 
 // Initialize Authentication
@@ -25,3 +30,6 @@ export const db = getFirestore(app);
 
 // Cloud Functions (callable)
 export const functions = getFunctions(app);
+
+// Firebase Storage
+export const storage = getStorage(app);

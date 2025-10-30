@@ -1,15 +1,91 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { facultyCourseService, assignmentService } from '@/services/facultyService';
 import { BookOpen, Users, Award, TrendingUp, Download, Upload } from 'lucide-react';
 
 export default function Gradebook() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [courses, setCourses] = useState([]);
+  const [gradebookData, setGradebookData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const courses = [
+  useEffect(() => {
+    if (user?.id) {
+      loadCourses();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (selectedCourse) {
+      loadGradebookData();
+    }
+  }, [selectedCourse]);
+
+  const loadCourses = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const coursesData = await facultyCourseService.getFacultyCourses(user.id);
+      setCourses(coursesData);
+      if (coursesData.length > 0) {
+        setSelectedCourse(coursesData[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading courses:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load courses',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadGradebookData = async () => {
+    if (!selectedCourse) return;
+    
+    try {
+      // Load assignments for the selected course
+      const assignments = await assignmentService.getCourseAssignments(selectedCourse);
+      
+      // Load students for the selected course
+      const students = await facultyCourseService.getCourseStudents(selectedCourse);
+      
+      // For now, use mock data - in a real implementation, you'd fetch actual grades
+      const mockGradebookData = students.map(student => ({
+        student: student.name,
+        email: student.email,
+        assignments: assignments.map(assignment => ({
+          name: assignment.title,
+          grade: Math.floor(Math.random() * 20) + 80, // Mock grade
+          maxPoints: assignment.points
+        })),
+        total: assignments.reduce((sum, assignment) => sum + assignment.points, 0),
+        maxTotal: assignments.reduce((sum, assignment) => sum + assignment.points, 0),
+        percentage: Math.floor(Math.random() * 20) + 80,
+        letterGrade: 'A-' // Mock letter grade
+      }));
+      
+      setGradebookData(mockGradebookData);
+    } catch (error) {
+      console.error('Error loading gradebook data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load gradebook data',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const fallbackCourses = [
     {
       id: '1',
       title: 'Data Structures & Algorithms',
@@ -26,50 +102,6 @@ export default function Gradebook() {
     }
   ];
 
-  const gradebookData = [
-    {
-      student: 'John Doe',
-      email: 'john.doe@student.edu',
-      assignments: [
-        { name: 'Binary Tree', grade: 92, maxPoints: 100 },
-        { name: 'Sorting', grade: 88, maxPoints: 100 },
-        { name: 'Linked Lists', grade: 95, maxPoints: 100 },
-        { name: 'Stacks/Queues', grade: 90, maxPoints: 100 }
-      ],
-      total: 365,
-      maxTotal: 400,
-      percentage: 91.25,
-      letterGrade: 'A-'
-    },
-    {
-      student: 'Jane Smith',
-      email: 'jane.smith@student.edu',
-      assignments: [
-        { name: 'Binary Tree', grade: 85, maxPoints: 100 },
-        { name: 'Sorting', grade: 82, maxPoints: 100 },
-        { name: 'Linked Lists', grade: 88, maxPoints: 100 },
-        { name: 'Stacks/Queues', grade: 90, maxPoints: 100 }
-      ],
-      total: 345,
-      maxTotal: 400,
-      percentage: 86.25,
-      letterGrade: 'B+'
-    },
-    {
-      student: 'Mike Johnson',
-      email: 'mike.johnson@student.edu',
-      assignments: [
-        { name: 'Binary Tree', grade: 98, maxPoints: 100 },
-        { name: 'Sorting', grade: 95, maxPoints: 100 },
-        { name: 'Linked Lists', grade: 97, maxPoints: 100 },
-        { name: 'Stacks/Queues', grade: 96, maxPoints: 100 }
-      ],
-      total: 386,
-      maxTotal: 400,
-      percentage: 96.5,
-      letterGrade: 'A'
-    }
-  ];
 
   return (
     <div className="space-y-6 p-6">
