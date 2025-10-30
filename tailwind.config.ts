@@ -14,6 +14,15 @@ export default {
     },
     extend: {
       colors: {
+        // Custom Palette Direct Colors
+        'navy-dark': '#091F46',
+        'blue-medium': '#37729C',
+        'blue-light': '#7699AE',
+        'beige-light': '#E9E4DE',
+        'yellow-golden': '#EFBF6A',
+        'brown': '#A55D35',
+
+        // CSS Variable-based colors
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

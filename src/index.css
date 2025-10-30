@@ -7,69 +7,78 @@
 
 @layer base {
   :root {
-    /* Professional Academic Color Palette */
-    --background: 220 15% 97%;
-    --foreground: 220 15% 15%;
+    /* New Custom Color Palette
+       #091F46 - Dark Navy
+       #37729C - Medium Blue
+       #7699AE - Light Blue
+       #E9E4DE - Light Beige
+       #EFBF6A - Golden Yellow
+       #A55D35 - Brown
+    */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    /* Base Colors - Light Beige Background */
+    --background: 35 20% 91%; /* #E9E4DE */
+    --foreground: 210 65% 16%; /* #091F46 - Dark Navy for text */
+
+    --card: 0 0% 100%; /* White cards for contrast */
+    --card-foreground: 210 65% 16%; /* #091F46 */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover-foreground: 210 65% 16%; /* #091F46 */
 
-    /* Academic Blue Primary */
-    --primary: 220 85% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 220 85% 65%;
-    --primary-dark: 220 85% 45%;
+    /* Primary - Medium Blue #37729C */
+    --primary: 203 48% 41%; /* #37729C */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+    --primary-light: 203 48% 51%; /* Lighter variant */
+    --primary-dark: 210 65% 16%; /* #091F46 - Dark Navy */
 
-    /* Professional Secondary */
-    --secondary: 220 15% 95%;
-    --secondary-foreground: 220 15% 25%;
+    /* Secondary - Light Blue #7699AE */
+    --secondary: 203 28% 58%; /* #7699AE */
+    --secondary-foreground: 210 65% 16%; /* #091F46 */
 
-    /* Muted Tones */
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 45%;
+    /* Muted Tones - Light Beige variants */
+    --muted: 35 20% 88%; /* Slightly darker than background */
+    --muted-foreground: 203 28% 40%; /* Darker blue for muted text */
 
-    /* Success Academic Green */
-    --success: 140 65% 45%;
+    /* Success - Brown #A55D35 */
+    --success: 22 50% 43%; /* #A55D35 */
     --success-foreground: 0 0% 100%;
-    --success-light: 140 65% 55%;
+    --success-light: 22 50% 53%;
 
-    /* Warning Academic Orange */
-    --warning: 35 85% 55%;
-    --warning-foreground: 0 0% 100%;
+    /* Warning - Golden Yellow #EFBF6A */
+    --warning: 40 80% 68%; /* #EFBF6A */
+    --warning-foreground: 210 65% 16%; /* #091F46 - Dark text for contrast */
 
-    /* Academic Accent Purple */
-    --accent: 270 70% 60%;
-    --accent-foreground: 0 0% 100%;
-    --accent-light: 270 70% 70%;
+    /* Accent - Light Blue #7699AE */
+    --accent: 203 28% 58%; /* #7699AE */
+    --accent-foreground: 210 65% 16%; /* #091F46 */
+    --accent-light: 203 28% 68%;
 
-    /* Error/Destructive */
-    --destructive: 0 85% 60%;
+    /* Error/Destructive - Using darker brown for errors */
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
     /* Borders and Inputs */
-    --border: 220 15% 88%;
-    --input: 220 15% 92%;
-    --ring: 220 85% 55%;
+    --border: 203 28% 75%; /* Light blue-gray */
+    --input: 35 20% 95%; /* Very light beige */
+    --ring: 203 48% 41%; /* #37729C - Primary blue */
 
-    /* Navigation Colors */
-    --nav-background: 220 20% 15%;
-    --nav-foreground: 220 15% 95%;
-    --nav-accent: 220 85% 55%;
+    /* Navigation Colors - Dark Navy #091F46 */
+    --nav-background: 210 65% 16%; /* #091F46 */
+    --nav-foreground: 35 20% 91%; /* #E9E4DE - Light beige text */
+    --nav-accent: 203 48% 41%; /* #37729C - Medium blue */
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(220 85% 55%), hsl(270 70% 60%));
-    --gradient-success: linear-gradient(135deg, hsl(140 65% 45%), hsl(160 65% 45%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 15% 98%));
-    --gradient-hero: linear-gradient(135deg, hsl(220 85% 55%) 0%, hsl(270 70% 60%) 50%, hsl(290 70% 65%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(203 48% 41%), hsl(203 28% 58%)); /* Blue gradient */
+    --gradient-success: linear-gradient(135deg, hsl(22 50% 43%), hsl(22 50% 53%)); /* Brown gradient */
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(35 20% 95%)); /* White to light beige */
+    --gradient-hero: linear-gradient(135deg, hsl(210 65% 16%) 0%, hsl(203 48% 41%) 50%, hsl(203 28% 58%) 100%); /* Navy to blues */
 
-    /* Shadows */
-    --shadow-sm: 0 2px 4px hsl(220 15% 15% / 0.05);
-    --shadow-md: 0 4px 12px hsl(220 15% 15% / 0.1);
-    --shadow-lg: 0 8px 24px hsl(220 15% 15% / 0.15);
-    --shadow-card: 0 2px 8px hsl(220 15% 15% / 0.08);
+    /* Shadows - Adjusted for new color scheme */
+    --shadow-sm: 0 2px 4px hsl(210 65% 16% / 0.08);
+    --shadow-md: 0 4px 12px hsl(210 65% 16% / 0.12);
+    --shadow-lg: 0 8px 24px hsl(210 65% 16% / 0.18);
+    --shadow-card: 0 2px 8px hsl(210 65% 16% / 0.1);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -77,54 +86,52 @@
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar - Dark Navy theme */
+    --sidebar-background: 210 65% 16%; /* #091F46 */
+    --sidebar-foreground: 35 20% 91%; /* #E9E4DE */
+    --sidebar-primary: 203 48% 41%; /* #37729C */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 65% 20%; /* Slightly lighter navy */
+    --sidebar-accent-foreground: 35 20% 91%; /* #E9E4DE */
+    --sidebar-border: 210 65% 25%;
+    --sidebar-ring: 203 48% 41%; /* #37729C */
   }
 
   .dark {
-    --background: 220 20% 8%;
-    --foreground: 220 15% 95%;
+    /* Dark mode using the new palette */
+    --background: 210 65% 12%; /* Very dark navy */
+    --foreground: 35 20% 91%; /* #E9E4DE - Light beige text */
 
-    --card: 220 20% 10%;
-    --card-foreground: 220 15% 95%;
+    --card: 210 65% 16%; /* #091F46 - Dark navy cards */
+    --card-foreground: 35 20% 91%; /* #E9E4DE */
 
-    --popover: 220 20% 10%;
-    --popover-foreground: 220 15% 95%;
+    --popover: 210 65% 16%;
+    --popover-foreground: 35 20% 91%;
 
-    --primary: 220 85% 65%;
-    --primary-foreground: 220 20% 8%;
+    --primary: 203 48% 51%; /* Lighter blue for dark mode */
+    --primary-foreground: 210 65% 12%;
 
-    --secondary: 220 15% 15%;
-    --secondary-foreground: 220 15% 85%;
+    --secondary: 203 28% 48%; /* Adjusted light blue */
+    --secondary-foreground: 35 20% 91%;
 
-    --muted: 220 15% 12%;
-    --muted-foreground: 220 10% 65%;
+    --muted: 210 65% 18%;
+    --muted-foreground: 203 28% 68%;
 
-    --accent: 270 70% 70%;
-    --accent-foreground: 220 20% 8%;
+    --accent: 203 28% 58%; /* #7699AE */
+    --accent-foreground: 210 65% 12%;
 
-    --destructive: 0 85% 65%;
-    --destructive-foreground: 220 20% 8%;
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 210 65% 12%;
 
-    --border: 220 15% 18%;
-    --input: 220 15% 15%;
-    --ring: 220 85% 65%;
+    --border: 210 65% 25%;
+    --input: 210 65% 18%;
+    --ring: 203 48% 51%;
 
-    --nav-background: 220 20% 5%;
-    --nav-foreground: 220 15% 95%;
+    --nav-background: 210 65% 10%;
+    --nav-foreground: 35 20% 91%;
+
+    --sidebar-background: 210 65% 10%;
+    --sidebar-foreground: 35 20% 91%;
   }
 }
 

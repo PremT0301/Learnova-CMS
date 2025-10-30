@@ -284,10 +284,10 @@ export const sendInvite = onCall({
   
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #4f46e5;">Welcome to Learnova!</h2>
+      <h2 style="color: #37729C;">Welcome to Learnova!</h2>
       <p>You have been invited to join Learnova as a <strong>${role}</strong>.</p>
       <p>Click the button below to create your account:</p>
-      <a href="${inviteUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 16px 0;">
+      <a href="${inviteUrl}" style="background-color: #37729C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 16px 0;">
         Accept Invitation
       </a>
       <p style="color: #666; font-size: 14px;">
@@ -554,14 +554,14 @@ export const sendAnnouncementEmail = onCall({
 function generateAnnouncementHTML(title: string, message: string): string {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #4f46e5;">Learnova Announcement</h2>
-      <h3 style="color: #333;">${title}</h3>
-      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <p style="line-height: 1.6; color: #333;">${message.replace(/\n/g, '<br>')}</p>
+      <h2 style="color: #37729C;">Learnova Announcement</h2>
+      <h3 style="color: #091F46;">${title}</h3>
+      <div style="background-color: #E9E4DE; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p style="line-height: 1.6; color: #091F46;">${message.replace(/\n/g, '<br>')}</p>
       </div>
       <p style="color: #666; font-size: 14px;">
         This is an official announcement from Learnova.<br>
-        <a href="${appUrl.value()}" style="color: #4f46e5;">Visit Learnova</a>
+        <a href="${appUrl.value()}" style="color: #37729C;">Visit Learnova</a>
       </p>
     </div>
   `;

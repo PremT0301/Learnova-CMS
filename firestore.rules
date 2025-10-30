@@ -55,14 +55,32 @@ service cloud.firestore {
     match /submissions/{docId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && (isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student');
-      allow update: if isSignedIn() && (isAdmin() || resource.data.studentId == request.auth.uid);
+      allow update, delete: if isSignedIn() && (isAdmin() || resource.data.studentId == request.auth.uid);
     }
 
     // Notifications collection
     match /notifications/{docId} {
       allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow update, delete: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+    }
+
+    // Enrollments collection
+    match /enrollments/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Grades collection
+    match /grades/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Attendance collection
+    match /attendance/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // Departments, Settings, Audit Logs, Announcements, Backups, Roles, Support Tickets
@@ -102,6 +120,20 @@ service cloud.firestore {
     match /course_enrollments/{docId} {
       allow read: if isSignedIn();
       allow write: if isSignedIn();
+    }
+
+    // Course Materials collection
+    match /course_materials/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'faculty');
+      allow update, delete: if isSignedIn() && (isAdmin() || resource.data.uploadedBy == request.auth.uid);
+    }
+
+    // Course Announcements collection
+    match /course_announcements/{docId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (isAdmin() || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'faculty');
+      allow update, delete: if isSignedIn() && (isAdmin() || resource.data.authorId == request.auth.uid);
     }
 
     // Fallback: deny all other access

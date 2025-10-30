@@ -9,6 +9,8 @@ import { Layout } from "@/components/layout/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
+import CourseDetails from "./pages/CourseDetails";
+import CoursePage from "./pages/CoursePage";
 import NotFound from "./pages/NotFound";
 import Signup from "./pages/Signup";
 import AdminDashboard from "./admin/AdminDashboard";
@@ -55,6 +57,7 @@ import AdvancedAnalytics from "./admin/AdvancedAnalytics";
 import APIManagement from "./admin/APIManagement";
 import AdvancedSecurity from "./admin/AdvancedSecurity";
 import FacultyAccountVerification from "./admin/FacultyAccountVerification";
+import DatabaseSetup from "./admin/DatabaseSetup";
 import RequestUnderReview from "./pages/RequestUnderReview";
 import RequestDenied from "./pages/RequestDenied";
 
@@ -96,6 +99,8 @@ const App = () => (
             }>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="courses" element={<ProtectedRoute allowedRoles={['student','faculty']}><Courses /></ProtectedRoute>} />
+              <Route path="courses/:courseId" element={<ProtectedRoute allowedRoles={['student','faculty','admin']}><CourseDetails /></ProtectedRoute>} />
+              <Route path="course/:courseId" element={<ProtectedRoute allowedRoles={['student','faculty','admin']}><CoursePage /></ProtectedRoute>} />
               <Route path="assignments" element={<div className="p-6"><h1 className="text-2xl font-bold">Assignments</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
               <Route path="notifications" element={<div className="p-6"><h1 className="text-2xl font-bold">Notifications</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
               <Route path="messages" element={<div className="p-6"><h1 className="text-2xl font-bold">Messages</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
@@ -361,8 +366,13 @@ const App = () => (
                   <AdvancedSecurity />
                 </ProtectedRoute>
               } />
+              <Route path="admin/database-setup" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <DatabaseSetup />
+                </ProtectedRoute>
+              } />
             </Route>
-            
+
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>

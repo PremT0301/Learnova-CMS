@@ -71,3 +71,33 @@ export interface Notification {
   createdAt: string;
   link?: string;
 }
+
+export interface CourseMaterial {
+  id: string;
+  courseId: string;
+  title: string;
+  description?: string;
+  type: 'pdf' | 'video' | 'document' | 'link' | 'other';
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  uploadedBy: string;
+  uploadedAt: string;
+  updatedAt?: string;
+  isPublished: boolean;
+  order?: number;
+}
+
+export interface CourseAnnouncement {
+  id: string;
+  courseId: string;
+  title: string;
+  content: string;
+  authorId: string;
+  authorName: string;
+  priority: 'low' | 'medium' | 'high';
+  isPinned: boolean;
+  attachments?: string[];
+  createdAt: string;
+  updatedAt?: string;
+}

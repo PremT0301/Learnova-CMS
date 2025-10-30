@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ import {
 export default function Courses() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,13 @@ export default function Courses() {
     };
   }, [user?.id, user?.role]);
 
+  const isEnrolled = (course: Course) => {
+    if (!user?.id || user.role !== 'student') return false;
+    // Check if the course has studentsEnrolled array and if user is in it
+    const courseData = course as any;
+    return courseData.studentsEnrolled?.includes(user.id) || false;
+  };
+
   const handleEnroll = async (courseId: string) => {
     if (!user?.id) return;
 
@@ -101,15 +110,15 @@ export default function Courses() {
   const canCreateCourse = user?.role === 'admin' || user?.role === 'faculty';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gradient-primary">Courses</h1>
-          <p className="text-muted-foreground">Explore and manage course offerings</p>
+          <p className="text-muted-foreground mt-1">Explore and manage course offerings</p>
         </div>
         {canCreateCourse && (
-          <Button className="btn-primary">
+          <Button className="btn-primary shadow-md hover:shadow-lg transition-shadow">
             <Plus size={20} className="mr-2" />
             Create Course
           </Button>
@@ -117,71 +126,79 @@ export default function Courses() {
       </div>
 
       {/* Search and Filters */}
-      <Card className="card-academic p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <Card className="card-academic p-4 shadow-sm border-border/50">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search courses, instructors, or course codes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-10 border-border/50 focus:border-primary"
             />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">All Departments</Button>
-            <Button variant="outline">Active Courses</Button>
+            <Button variant="outline" className="border-border/50 hover:bg-accent/10">All Departments</Button>
+            <Button variant="outline" className="border-border/50 hover:bg-accent/10">Active Courses</Button>
           </div>
         </div>
       </Card>
 
       {/* Statistics */}
-      <div className="grid md:grid-cols-4 gap-4">
-        <Card className="card-academic p-6">
-          <div className="flex items-center gap-3">
-            <BookOpen className="text-primary" size={24} />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="card-academic p-5 shadow-sm border-border/50 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-primary/10">
+              <BookOpen className="text-primary" size={22} />
+            </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Courses</p>
-              <p className="text-2xl font-bold">{courses.length}</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Courses</p>
+              <p className="text-2xl font-bold mt-1">{courses.length}</p>
             </div>
           </div>
         </Card>
-        <Card className="card-academic p-6">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="text-success" size={24} />
+        <Card className="card-academic p-5 shadow-sm border-border/50 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-success/10">
+              <TrendingUp className="text-success" size={22} />
+            </div>
             <div>
-              <p className="text-sm text-muted-foreground">Active Courses</p>
-              <p className="text-2xl font-bold">{courses.filter(c => c.status === 'active').length}</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active Courses</p>
+              <p className="text-2xl font-bold mt-1">{courses.filter(c => c.status === 'active').length}</p>
             </div>
           </div>
         </Card>
-        <Card className="card-academic p-6">
-          <div className="flex items-center gap-3">
-            <Users className="text-warning" size={24} />
+        <Card className="card-academic p-5 shadow-sm border-border/50 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-warning/10">
+              <Users className="text-warning" size={22} />
+            </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Enrollments</p>
-              <p className="text-2xl font-bold">{courses.reduce((sum, c) => sum + (c.enrolled || 0), 0)}</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Enrollments</p>
+              <p className="text-2xl font-bold mt-1">{courses.reduce((sum, c) => sum + (c.enrolled || 0), 0)}</p>
             </div>
           </div>
         </Card>
-        <Card className="card-academic p-6">
-          <div className="flex items-center gap-3">
-            <Clock className="text-accent" size={24} />
+        <Card className="card-academic p-5 shadow-sm border-border/50 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-accent/10">
+              <Clock className="text-accent" size={22} />
+            </div>
             <div>
-              <p className="text-sm text-muted-foreground">This Semester</p>
-              <p className="text-2xl font-bold">{courses.filter(c => c.status === 'active').length}</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">This Semester</p>
+              <p className="text-2xl font-bold mt-1">{courses.filter(c => c.status === 'active').length}</p>
             </div>
           </div>
         </Card>
       </div>
 
       {loading ? (
-        <Card className="card-academic p-12 text-center">
+        <Card className="card-academic p-12 text-center shadow-sm">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground text-lg">Loading courses...</p>
         </Card>
       ) : filteredCourses.length === 0 ? (
-        <Card className="card-academic p-12 text-center">
+        <Card className="card-academic p-12 text-center shadow-sm">
           <BookOpen className="text-muted-foreground mx-auto mb-4" size={48} />
           <p className="text-lg font-medium mb-2">No courses found</p>
           <p className="text-muted-foreground">
@@ -190,77 +207,114 @@ export default function Courses() {
         </Card>
       ) : (
         /* Courses Grid */
-        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredCourses.map((course) => (
-            <Card key={course.id} className="card-academic card-hover overflow-hidden">
-              <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
+            <Card key={course.id} className="card-academic card-hover overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border-border/50">
+              <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-primary/15 via-primary/10 to-accent/15">
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <BookOpen className="text-primary/50" size={48} />
+                  <BookOpen className="text-primary/40" size={56} />
                 </div>
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-sm font-medium">
-                  {course.code}
+                <div className="absolute top-3 right-3">
+                  <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm">
+                    <span className="text-sm font-semibold text-foreground">{course.code}</span>
+                  </div>
                 </div>
-                <div className="absolute top-4 left-4">
-                  <Badge variant={course.status === 'active' ? 'default' : 'secondary'}>
+                <div className="absolute top-3 left-3">
+                  <Badge
+                    variant={course.status === 'active' ? 'default' : 'secondary'}
+                    className="shadow-sm"
+                  >
                     {course.status}
                   </Badge>
                 </div>
               </div>
-              
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-lg text-foreground mb-1">{course.title}</h3>
-                    <p className="text-muted-foreground text-sm">{course.instructor}</p>
+
+              <div className="p-5">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg text-foreground mb-1 line-clamp-1">{course.title}</h3>
+                    <p className="text-muted-foreground text-sm truncate">{course.instructor}</p>
                   </div>
-                  <div className="flex items-center gap-1 text-warning">
+                  <div className="flex items-center gap-1 text-warning ml-2 flex-shrink-0">
                     <Star size={16} fill="currentColor" />
-                    <span className="text-sm font-medium">4.8</span>
+                    <span className="text-sm font-semibold">4.8</span>
                   </div>
                 </div>
 
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                <p className="text-muted-foreground text-sm mb-4 line-clamp-2 leading-relaxed">
                   {course.description}
                 </p>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Users size={16} />
-                      <span>{course.enrolled || 0}/{course.capacity || 0} enrolled</span>
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Users size={15} />
+                      <span className="font-medium">{course.enrolled || 0}/{course.capacity || 0} enrolled</span>
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar size={16} />
-                      <span>{course.credits} credits</span>
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Calendar size={15} />
+                      <span className="font-medium">{course.credits} credits</span>
                     </div>
                   </div>
 
-                  <div className="progress-academic">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${(course.capacity ? ((course.enrolled || 0) / course.capacity) * 100 : 0)}%` }} 
+                  <div className="progress-academic h-2 rounded-full">
+                    <div
+                      className="progress-fill h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(course.capacity ? ((course.enrolled || 0) / course.capacity) * 100 : 0)}%` }}
                     />
                   </div>
 
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-1">
                     {user?.role === 'student' ? (
-                      <Button 
-                        className="flex-1 btn-primary"
-                        onClick={() => handleEnroll(course.id)}
-                        disabled={enrolling === course.id}
-                      >
-                        {enrolling === course.id ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <>
+                        {isEnrolled(course) ? (
+                          <Button
+                            className="flex-1 btn-primary shadow-sm hover:shadow-md transition-shadow"
+                            onClick={() => navigate(`/course/${course.id}`)}
+                          >
+                            <BookOpen className="mr-2" size={16} />
+                            Open Course
+                          </Button>
                         ) : (
-                          'Enroll Now'
+                          <Button
+                            className="flex-1 btn-primary shadow-sm hover:shadow-md transition-shadow"
+                            onClick={() => handleEnroll(course.id)}
+                            disabled={enrolling === course.id}
+                          >
+                            {enrolling === course.id ? (
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              'Enroll Now'
+                            )}
+                          </Button>
                         )}
-                      </Button>
+                        <Button
+                          variant="outline"
+                          className="shadow-sm hover:shadow-md transition-shadow"
+                          onClick={() => navigate(`/courses/${course.id}`)}
+                        >
+                          View Details
+                        </Button>
+                      </>
                     ) : (
-                      <Button className="flex-1" variant="outline">
-                        View Details
-                      </Button>
+                      <>
+                        <Button
+                          className="flex-1 btn-primary shadow-sm hover:shadow-md transition-shadow"
+                          onClick={() => navigate(`/course/${course.id}`)}
+                        >
+                          <BookOpen className="mr-2" size={16} />
+                          Open Course
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="shadow-sm hover:shadow-md transition-shadow"
+                          onClick={() => navigate(`/courses/${course.id}`)}
+                        >
+                          View Details
+                        </Button>
+                      </>
                     )}
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="shadow-sm hover:shadow-md transition-shadow">
                       <Star size={16} />
                     </Button>
                   </div>

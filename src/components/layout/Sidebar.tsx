@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
-import { 
-  Building2, FileBarChart, History, ShieldCheck, Mail, Activity, 
-  LifeBuoy, Database, UserCheck, BookOpen, Settings, ClipboardList, 
-  Award, Eye, FolderOpen, Plug, TrendingUp, Code, Lock, X
+import {
+  Building2, FileBarChart, History, ShieldCheck, Mail, Activity,
+  LifeBuoy, Database, UserCheck, BookOpen, Settings, ClipboardList,
+  Award, Eye, FolderOpen, Plug, TrendingUp, Code, Lock, X, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -129,6 +129,12 @@ const adminModules = [
     label: 'Advanced Security',
     path: '/admin/advanced-security',
     description: 'Security policies and monitoring'
+  },
+  {
+    icon: RefreshCw,
+    label: 'Database Setup',
+    path: '/admin/database-setup',
+    description: 'Clean and populate database with fresh data'
   }
 ];
 
